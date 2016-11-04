@@ -13,13 +13,13 @@ timeseries <- function (data, time){
   tax <- data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data)))
   sample <- suppressWarnings(as.data.frame(as.matrix(sample_data(data))))
   
-  ##Adding time to subset and melting
-  time <- get_variable(sample, time) %>% as.Date() %>% as.data.frame()
-  abund3 <- cbind(time, abund)
-  names(abund3)[1] <-"Time"
-  abund5 <- melt(abund3, id.var="Time", value.name="Abundance", variable.name = "Sample")
+  ##Adding time variables to abundance values and melting
+  timeVar <- time
+  time1 <- sample[, timeVar] %>% as.Date() 
+  abund1 <- cbind(Time=time1, abund)
+  abund2 <- melt(abund1, id.var="Time", value.name="Abundance", variable.name = "Sample")
   
   ##Plot  
-  ggplot(abund5, aes_string(x="Time", y="Abundance", col="Sample"))+
-    geom_line()  
+  ggplot(abund2, aes_string(x="Time", y="Abundance", col="Sample"))+
+    geom_line()   
 }
