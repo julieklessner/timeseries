@@ -21,5 +21,5 @@ timeseries <- function (data, time){
   
   ##Plot  
   ggplot(abund2, aes_string(x="Time", y="Abundance", col="Sample"))+
-    geom_line() 
+    geom_line()   
 }
