@@ -6,3 +6,6 @@ Basic function
 
 ##Version 0.0.1
 Removing phyloseq function: get_variable
+
+##Version 0.0.2 
+Adding tax.aggregation and tax.add
