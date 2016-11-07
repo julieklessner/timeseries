@@ -9,3 +9,6 @@ Removing phyloseq function: get_variable
 
 ##Version 0.0.2 
 Adding tax.aggregation and tax.add
+
+##Version 0.0.3
+Adding group
