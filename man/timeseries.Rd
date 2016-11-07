@@ -4,12 +4,21 @@
 \alias{timeseries}
 \title{Timeseries}
 \usage{
-timeseries(data, time)
+timeseries(data, time, tax.aggregate = "Phylum", tax.add = NULL,
+  tax.class = NULL, tax.empty = "best")
 }
 \arguments{
-\item{data}{A phyloseq object.}
+\item{data}{(required) A phyloseq object.}
 
-\item{time}{The name of the column containing the time variables (e.g. "Date")}
+\item{time}{(required) The name of the column containing the time variables (e.g. "Date")}
+
+\item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: "Phylum")}
+
+\item{tax.add}{Additional taxonomic levels to display for each entry, e.g. "Phylum" (default: "none").}
+
+\item{tax.class}{Converts a specific phyla to class level instead, e.g. "p__Proteobacteria" (default: "none) .}
+
+\item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").}
 }
 \description{
 This function allows you plot relative abundance reads over time in a timeseries plot.
