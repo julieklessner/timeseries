@@ -4,13 +4,15 @@
 \alias{timeseries}
 \title{Timeseries}
 \usage{
-timeseries(data, time, tax.aggregate = "Phylum", tax.add = NULL,
-  tax.class = NULL, tax.empty = "best")
+timeseries(data, time, group = "Sample", tax.aggregate = "Phylum",
+  tax.add = NULL, tax.class = NULL, tax.empty = "best")
 }
 \arguments{
 \item{data}{(required) A phyloseq object.}
 
-\item{time}{(required) The name of the column containing the time variables (e.g. "Date")}
+\item{time}{(required) The name of the column containing the time variables, e.g. "Date".}
+
+\item{group}{A variable from the associated sample data to group samples by (default: "Samples").}
 
 \item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: "Phylum")}
 
