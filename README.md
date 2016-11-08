@@ -12,3 +12,6 @@ Adding tax.aggregation and tax.add
 
 ##Version 0.0.3
 Adding group
+
+##Version 0.0.3.1
+Fixing errors
