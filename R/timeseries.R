@@ -13,6 +13,14 @@
 
 timeseries <- function(data, time, group="Sample", tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best"){
   
+  data = d
+  time = "Dato"
+  group= "Line"
+  tax.aggregate="Class"
+  tax.add="OTU"
+  tax.class=NULL
+  tax.empty="best"
+  
   ## Pulling data from phyloseq 
   data = list( abund = otu_table(data)@.Data %>% t() %>% as.data.frame(),
                tax  = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
@@ -47,24 +55,27 @@ timeseries <- function(data, time, group="Sample", tax.aggregate="Phylum", tax.a
   time1 <- sample[, time] %>% as.Date()
   abund1 <- cbind(Time=time1, abund)
   
-  ## Adding group information to abundance reads
+  #Achieving long format data by melting  
+  abund2 <- melt(abund1, id.var=c("Time"), value.name="Abundance", 
+                 variable.name = "Sample")
+  
+  ##Adding group information to abundance reads
   suppressWarnings(
     if (group != "Sample"){
       if (length(group) > 1){
-        abund2 <- data.frame(abund1, Group = apply(sample[,group], 1, paste, collapse = " ")) 
+        abund3 <- data.frame(abund2, Group = apply(sample[,group], 1, paste, collapse = " ")) 
       } else{
-        abund2 <- data.frame(abund1, Group = sample[,group]) 
+        abund3 <- data.frame(abund2, Group = sample[,group]) 
       }
     } else{
-      abunds <- melt(abund1, id.var="Time", value.name="Abundance", variable.name = "Sample") 
-      abund2 <- data.frame(abunds, Group = abunds$Sample )
+      abund3 <- data.frame(abund2, Group = abund2$Sample )
     }
   )
   
-  #Achieving long format data by melting  
-  abund3 <- melt(abund2, id.var=c("Time", "Group"), value.name="Abundance", variable.name = "Sample")
   
   ##Plot  
   ggplot(abund3, aes_string(x="Time", y="Abundance", col="Group"))+
-    geom_line() 
+    geom_line()+
+    theme(axis.text.x = element_text(size = 10, hjust = 1)) + 
+    theme(axis.text.y = element_text(size = 12)) 
 }
