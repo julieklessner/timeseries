@@ -13,14 +13,6 @@
 
 timeseries <- function(data, time, group="Sample", tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best"){
   
-  data = d
-  time = "Dato"
-  group= "Line"
-  tax.aggregate="Class"
-  tax.add="OTU"
-  tax.class=NULL
-  tax.empty="best"
-  
   ## Pulling data from phyloseq 
   data = list( abund = otu_table(data)@.Data %>% t() %>% as.data.frame(),
                tax  = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
