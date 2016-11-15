@@ -8,71 +8,89 @@
 #' @param tax.add Additional taxonomic levels to display for each entry, e.g. "Phylum" (default: "none").
 #' @param tax.class Converts a specific phyla to class level instead, e.g. "p__Proteobacteria" (default: "none) .
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").
-#' @keywords timeseries
+#' @param plot.x.label Label on x-axis (default: "Time")
+#' @param plot.y.label Label on y-axis (default: "Abundance")
+#' @param plot.legend.label Label on legend (default: "Sample")
+#'  @keywords timeseries
 #' @export
 
-timeseries <- function(data, time, group="Sample", tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best"){
+timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.label="Sample"){
   
-  ## Pulling data from phyloseq 
-  data <- list(abund = as.data.frame(otu_table(data)@.Data),
-               tax = data.frame(tax_table(data)@.Data, OTU = rownames(tax_table(data))),
-               sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
+  # Extract data from phyloseq object ---------------------------------------------
   
-  ##Cleaning and renaming taxonomy
-  data <- amp_rename(data = data, tax.class=tax.class, tax.empty=tax.empty, tax.level = tax.aggregate)
+  data0 <- list(abund = as.data.frame(otu_table(data)@.Data),
+                tax = data.frame(tax_table(data)@.Data, OTU =   rownames(tax_table(data))),
+                sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
   
-  ##Dividing data to seperate data frames
+  # Clean and rename taxonomy ----------------------------------------------------
+  
+  data <- amp_rename(data = data0,
+                     tax.class=tax.class, 
+                     tax.empty=tax.empty, 
+                     tax.level = tax.aggregate)
+  
+  # Divide data to seperate data frames ---------------------------------------------
+  
   abund <- data[["abund"]]
   tax <- data[["tax"]]
   sample <- data[["sample"]]
   
-  #Making it possible to display multiple levels using tax.add
-  ##Display: contains value names
+  #Display multiple levels using tax.add argument -------------------------------------
   
   suppressWarnings(
     if (!is.null(tax.add)){
-      if (tax.add != tax.aggregate) {
-        tax <- data.frame(tax, Display = apply(tax[,c(tax.add,tax.aggregate)], 1, paste, collapse="; "))
+      
+      if (tax.add != tax.aggregate){
+        tax <- data.frame(tax, 
+                          Display = apply(tax[,c(tax.add,tax.aggregate)], 1, 
+                                          paste, collapse="; "))
       }
+      
     } else {
       tax <- data.frame(tax, Display = tax[, tax.aggregate])
     }
   )  
   
-  #Adding tax.aggregates to abundance reads (as value names)
-  #cols <- tax[, "Display"]
-  #colnames(abund) <- cols
+  # Aggregate to a specific taxonomic level using tax.aggregate argument---------------
   
-  
-  # Aggregate to a specific taxonomic level
   abund3 <- cbind.data.frame(Display = tax[,"Display"], abund) %>%
-    melt(id.var = "Display", value.name= "Abundance", variable.name = "Sample")
+    melt(id.var = "Display", 
+         value.name = "Abundance", 
+         variable.name = "Sample")
   
   abund3 <- data.table(abund3)[, sum:=sum(Abundance), by=list(Display, Sample)] %>%
     setkey(Display, Sample) %>%
     unique() %>% 
     as.data.frame()
   
-  #Adding time variables to abundance reads
+  # Add time variables to abundance reads ------------------------------------------
+  
   time1 <- sample[, time] %>% as.Date()
-  abund1 <- cbind(Time=time1, abund3) ### Brug merge
+  abund4 <- cbind(Time=time1, abund3) ### Brug merge
   
-  ##Adding group information to abundance reads
-  suppressWarnings(
-    if (group != "Sample"){
-      if (length(group) > 1){
-        abund3 <- data.frame(abund1, Group = apply(sample[,group], 1, paste, collapse = " ")) 
-      } else{
-        abund3 <- data.frame(abund1, Group = sample[,group]) 
-      }
-    } else{
-      abund3 <- data.frame(abund1, Group = abund1$Sample )
-    }
-  )
+  # Base plot, user may choose labels ------------------------------------------------
   
-  ##Plot  
-  ggplot(abund3, aes_string(x="Time", y="sum", col = "Display"))+
+  p <- ggplot(abund4, aes_string(x="Time", y="sum", col = "Display"))+
     geom_line()+
+    labs(x=plot.x.label, y=plot.y.label)+
+    scale_colour_discrete(name=plot.legend.label)+
     theme(axis.text.x = element_text(size = 10, hjust = 1)) + 
-    theme(axis.text.y = element_text(size = 12)) 
+    theme(axis.text.y = element_text(size = 12))
+  
+  # Setting layout if plot.theme = clean----------------------------------------------
+  
+  if(plot.theme == "clean"){
+    
+    p <- p + theme(legend.position = "none",
+                   axis.text.y = element_text(size = 8, color = "black"),
+                   axis.text.x = element_text(size = 8, color = "black", vjust = 0.5),
+                   axis.title = element_blank(),
+                   text = element_text(size = 8, color = "black"),
+                   axis.ticks.length = unit(1, "mm"),
+                   plot.margin = unit(c(0,0,0,0), "mm"),
+                   title = element_text(size = 8))
+  }
+  
+  # Output-----------------------------------------------------------------------------  
+  p
 }
