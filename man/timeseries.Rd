@@ -4,15 +4,15 @@
 \alias{timeseries}
 \title{Timeseries}
 \usage{
-timeseries(data, time, group = "Sample", tax.aggregate = "Phylum",
-  tax.add = NULL, tax.class = NULL, tax.empty = "best")
+timeseries(data, time, tax.aggregate = "Phylum", tax.add = NULL,
+  tax.class = NULL, tax.empty = "best", plot.x.label = "Time",
+  plot.y.label = "Abundance", plot.legend.label = "Sample",
+  plot.theme = "normal")
 }
 \arguments{
 \item{data}{(required) A phyloseq object.}
 
 \item{time}{(required) The name of the column containing the time variables, e.g. "Date".}
-
-\item{group}{A variable from the associated sample data to group samples by (default: "Samples").}
 
 \item{tax.aggregate}{The taxonomic level that the data should be aggregated to (default: "Phylum")}
 
@@ -21,9 +21,19 @@ timeseries(data, time, group = "Sample", tax.aggregate = "Phylum",
 \item{tax.class}{Converts a specific phyla to class level instead, e.g. "p__Proteobacteria" (default: "none) .}
 
 \item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").}
+
+\item{plot.x.label}{Label on x-axis (default: "Time")}
+
+\item{plot.y.label}{Label on y-axis (default: "Abundance")}
+
+\item{plot.legend.label}{Label on legend (default: "Sample")}
+
+\item{plot.theme}{Label on legend (default: "Sample")
+@keywords timeseries}
+
+\item{group}{A variable from the associated sample data to group samples by (default: "Samples").}
 }
 \description{
 This function allows you plot relative abundance reads over time in a timeseries plot.
 }
-\keyword{timeseries}
 

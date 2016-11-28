@@ -11,10 +11,12 @@
 #' @param plot.x.label Label on x-axis (default: "Time")
 #' @param plot.y.label Label on y-axis (default: "Abundance")
 #' @param plot.legend.label Label on legend (default: "Sample")
+#' @param plot.theme Label on legend (default: "Sample")
 #'  @keywords timeseries
+#' @import data.table
 #' @export
 
-timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.label="Sample"){
+timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.label="Sample", plot.theme="normal"){
   
   # Extract data from phyloseq object ---------------------------------------------
   
