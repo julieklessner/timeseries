@@ -14,24 +14,26 @@
 #' @param plot.theme Label on legend (default: "Sample")
 #'  @keywords timeseries
 #' @import data.table
+#' @import xts
+#' @import dygraphs
 #' @export
 
 timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.label="Sample", plot.theme="normal"){
   
-  # Extract data from phyloseq object ---------------------------------------------
+  # Extract data from phyloseq object ------------------------------------------------
   
   data0 <- list(abund = as.data.frame(otu_table(data)@.Data),
                 tax = data.frame(tax_table(data)@.Data, OTU =   rownames(tax_table(data))),
                 sample = suppressWarnings(as.data.frame(as.matrix(sample_data(data)))))
   
-  # Clean and rename taxonomy ----------------------------------------------------
+  # Clean and rename taxonomy ---------------------------------------------------------
   
   data <- amp_rename(data = data0,
                      tax.class=tax.class, 
                      tax.empty=tax.empty, 
                      tax.level = tax.aggregate)
   
-  # Divide data to seperate data frames ---------------------------------------------
+  # Divide data to seperate data frames -----------------------------------------------
   
   abund <- data[["abund"]]
   tax <- data[["tax"]]
@@ -55,7 +57,7 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
   
   # Aggregate to a specific taxonomic level using tax.aggregate argument---------------
   
-  abund3 <- cbind.data.frame(Display = tax[,"Display"], abund) %>%
+  abund3 <- cbind(Display = tax[,"Display"], abund) %>%
     melt(id.var = "Display", 
          value.name = "Abundance", 
          variable.name = "Sample")
@@ -66,33 +68,15 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
     as.data.frame()
   
   # Add time variables to abundance reads ------------------------------------------
+  rownames(abund) <- tax[, "Display"]
   
   time1 <- sample[, time] %>% as.Date()
-  abund4 <- cbind(Time=time1, abund3) ### Brug merge
+  xts1 <- xts(x=t(abund), order.by = time1, unique = T)
   
-  # Base plot, user may choose labels ------------------------------------------------
+  xts2 <- apply.daily(xts1, FUN=mean)
   
-  p <- ggplot(abund4, aes_string(x="Time", y="sum", col = "Display"))+
-    geom_line()+
-    labs(x=plot.x.label, y=plot.y.label)+
-    scale_colour_discrete(name=plot.legend.label)+
-    theme(axis.text.x = element_text(size = 10, hjust = 1)) + 
-    theme(axis.text.y = element_text(size = 12))
-  
-  # Setting layout if plot.theme = clean----------------------------------------------
-  
-  if(plot.theme == "clean"){
-    
-    p <- p + theme(legend.position = "none",
-                   axis.text.y = element_text(size = 8, color = "black"),
-                   axis.text.x = element_text(size = 8, color = "black", vjust = 0.5),
-                   axis.title = element_blank(),
-                   text = element_text(size = 8, color = "black"),
-                   axis.ticks.length = unit(1, "mm"),
-                   plot.margin = unit(c(0,0,0,0), "mm"),
-                   title = element_text(size = 8))
-  }
-  
-  # Output-----------------------------------------------------------------------------  
-  p
+  dygraph(xts2) %>%
+    dyOptions(drawPoint = T, pointSize=2) %>%
+    dyAxis("y", label = "Abundance Reads") %>%
+    dyLegend(labelsSeparateLines = TRUE)
 }

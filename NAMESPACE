@@ -2,3 +2,5 @@
 
 export(timeseries)
 import(data.table)
+import(dygraphs)
+import(xts)
