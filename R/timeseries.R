@@ -8,17 +8,20 @@
 #' @param tax.add Additional taxonomic levels to display for each entry, e.g. "Phylum" (default: "none").
 #' @param tax.class Converts a specific phyla to class level instead, e.g. "p__Proteobacteria" (default: "none) .
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").
-#' @param plot.x.label Label on x-axis (default: "Time")
-#' @param plot.y.label Label on y-axis (default: "Abundance")
-#' @param plot.legend.label Label on legend (default: "Sample")
-#' @param plot.theme Label on legend (default: "Sample")
+#' @param plot.x.label Label on x-axis (default: "Time").
+#' @param plot.y.label Label on y-axis (default: "Abundance").
+#' @param plot.legend.label Label on legend (default: "Sample").
+#' @param show.ggplot Show non-interactive ggplot instead of interactive dygraph (default = FALSE)
+#' @param plot.theme Label on legend (default: "Sample").
 #'  @keywords timeseries
 #' @import data.table
 #' @import xts
 #' @import dygraphs
+#' @import ggplot2
+#' 
 #' @export
 
-timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.label="Sample", plot.theme="normal"){
+timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.label="Sample", plot.theme="normal", show.ggplot = FALSE){
   
   # Extract data from phyloseq object ------------------------------------------------
   
@@ -33,13 +36,13 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
                      tax.empty=tax.empty, 
                      tax.level = tax.aggregate)
   
-  # Divide data to seperate data frames -----------------------------------------------
+  # Divide data to seperate data frames ----------------------------------------------
   
   abund <- data[["abund"]]
   tax <- data[["tax"]]
   sample <- data[["sample"]]
   
-  #Display multiple levels using tax.add argument -------------------------------------
+  #Display multiple levels using tax.add argument ------------------------------------
   
   suppressWarnings(
     if (!is.null(tax.add)){
@@ -55,7 +58,7 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
     }
   )  
   
-  # Aggregate to a specific taxonomic level using tax.aggregate argument---------------
+  # Aggregate to a specific taxonomic level using tax.aggregate argument--------------
   
   abund3 <- cbind(Display = tax[,"Display"], abund) %>%
     melt(id.var = "Display", 
@@ -66,17 +69,71 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
     setkey(Display, Sample) %>%
     unique() %>% 
     as.data.frame()
+
   
-  # Add time variables to abundance reads ------------------------------------------
-  rownames(abund) <- tax[, "Display"]
+#############################################
+##            ggplot layout                ##
+#############################################  
+    
+    # Add time variables to abundance reads --------------------------------------------
+    
+    time1 <- sample[, time] %>% as.Date()
+    abund6 <- cbind(Time=time1, abund3) 
+    
+    # Base plot, user may choose labels ------------------------------------------------
+    
+    p <- ggplot(abund6, aes_string(x="Time", y="sum", col = "Display"))+
+      geom_line()+
+      geom_point()+
+      labs(x=plot.x.label, y=plot.y.label)+
+      scale_colour_discrete(name=plot.legend.label)+
+      theme(axis.text.x = element_text(size = 10, hjust = 1)) + 
+      theme(axis.text.y = element_text(size = 12))
+    
+    # Setting layout if plot.theme = clean----------------------------------------------
+    
+    if(plot.theme == "clean"){
+      
+      p <- p + theme(legend.position = "none",
+                     axis.text.y = element_text(size = 8, color = "black"),
+                     axis.text.x = element_text(size = 8, color = "black", vjust = 0.5),
+                     axis.title = element_blank(),
+                     text = element_text(size = 8, color = "black"),
+                     axis.ticks.length = unit(1, "mm"),
+                     plot.margin = unit(c(0,0,0,0), "mm"),
+                     title = element_text(size = 8))
+    }
+    # Output----------------------------------------------------------------------------
+    if(show.ggplot == TRUE){
+     p
+  } else {
+  
+  #############################################
+  ##            dygraph layout              ##
+  ############################################# 
+  
+  # Reshaping data for xts ---------------------------------------------------------
+  
+  keep <- c("Display","Sample", "sum")
+  abund4 <- abund3[keep]
+  
+  abund5 <- reshape(abund4, timevar = "Sample", idvar = "Display",
+                    direction = "wide")
+  
+  rownames(abund5) <- abund5[,1]
+  abund5[,1] <- NULL
+  
+  # Add time variables to abundance reads ----------------------------------------
   
   time1 <- sample[, time] %>% as.Date()
-  xts1 <- xts(x=t(abund), order.by = time1, unique = T)
+  xts1 <- xts(x=t(abund5), order.by = time1, unique = T)
   
   xts2 <- apply.daily(xts1, FUN=mean)
   
   dygraph(xts2) %>%
     dyOptions(drawPoint = T, pointSize=2) %>%
     dyAxis("y", label = "Abundance Reads") %>%
-    dyLegend(labelsSeparateLines = TRUE)
+    dyLegend(labelsSeparateLines = TRUE)    
+
+  }
 }

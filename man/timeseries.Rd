@@ -7,7 +7,7 @@
 timeseries(data, time, tax.aggregate = "Phylum", tax.add = NULL,
   tax.class = NULL, tax.empty = "best", plot.x.label = "Time",
   plot.y.label = "Abundance", plot.legend.label = "Sample",
-  plot.theme = "normal")
+  plot.theme = "normal", show.ggplot = FALSE)
 }
 \arguments{
 \item{data}{(required) A phyloseq object.}
@@ -22,14 +22,16 @@ timeseries(data, time, tax.aggregate = "Phylum", tax.add = NULL,
 
 \item{tax.empty}{Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").}
 
-\item{plot.x.label}{Label on x-axis (default: "Time")}
+\item{plot.x.label}{Label on x-axis (default: "Time").}
 
-\item{plot.y.label}{Label on y-axis (default: "Abundance")}
+\item{plot.y.label}{Label on y-axis (default: "Abundance").}
 
-\item{plot.legend.label}{Label on legend (default: "Sample")}
+\item{plot.legend.label}{Label on legend (default: "Sample").}
 
-\item{plot.theme}{Label on legend (default: "Sample")
+\item{plot.theme}{Label on legend (default: "Sample").
 @keywords timeseries}
+
+\item{show.ggplot}{Show non-interactive ggplot instead of interactive dygraph (default = FALSE)}
 
 \item{group}{A variable from the associated sample data to group samples by (default: "Samples").}
 }
