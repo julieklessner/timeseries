@@ -15,17 +15,17 @@
 #' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
 #' @keywords timeseries
 #' 
-#' @export
-#' 
+#'
 #' @import data.table
 #' @import xts
 #' @import dygraphs
 #' @import broom
 #' @import ggplot2
-#' 
+#' @export 
 #' @author Julie Klessner Thun Pedersen \email{julieklessnerthun@@gmail.com}
 
-timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.title="Sample", plot.theme="normal", plot.layout = "dygraph"){
+timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.title="Sample", plot.theme="normal", plot.layout="dygraph"){
+  
   
   # Extract data from phyloseq object ------------------------------------------------
   
@@ -94,20 +94,22 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
   
   
   if(plot.layout == "dygraph"){
-    dygraph(xts2) %>%
+    q <- dygraph(xts2) %>%
       dyOptions(drawPoint = T, pointSize=2) %>%
       dyAxis("y", label = plot.y.label) %>%
       dyAxis("x", label = plot.x.label) %>%
       dyLegend(labelsSeparateLines = TRUE)
   }
   
+  show(q)
+  
   if(plot.layout == "ggplot"){
     
-  # Reshaping for ggplot  -----------------------------------------------------------
+    # Reshaping for ggplot  --------------------------------------------
     
     ggxts <- tidy(xts2)  
     
-  # Base plot, user may choose labels ------------------------------------------------
+    # Base plot, user may choose labels ------------------------------------------------
     
     p <- ggplot(ggxts, aes_string(x="index", y="value", col = "series"))+
       geom_line()+
@@ -134,6 +136,6 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
     p
     
   }
-  
 
 }
+  
