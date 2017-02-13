@@ -10,18 +10,22 @@
 #' @param tax.empty Either "remove" OTUs without taxonomic information, add "best" classification or add the "OTU" name (default: "best").
 #' @param plot.x.label Label on x-axis (default: "Time").
 #' @param plot.y.label Label on y-axis (default: "Abundance").
-#' @param plot.legend.label Label on legend (default: "Sample").
-#' @param show.ggplot Show non-interactive ggplot instead of interactive dygraph (default = FALSE)
-#' @param plot.theme Label on legend (default: "Sample").
-#'  @keywords timeseries
+#' @param plot.legend.title Label on ggplot legend. (default: "Sample").
+#' @param plot.layout Either "ggplot" or "dygraph" (default: "dygraph").
+#' @param plot.theme Chose different standard layouts choose from "normal" or "clean" (default: "normal").
+#' @keywords timeseries
+#' 
+#' @export
+#' 
 #' @import data.table
 #' @import xts
 #' @import dygraphs
+#' @import broom
 #' @import ggplot2
 #' 
-#' @export
+#' @author Julie Klessner Thun Pedersen \email{julieklessnerthun@@gmail.com}
 
-timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.label="Sample", plot.theme="normal", show.ggplot = FALSE){
+timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.class=NULL, tax.empty="best", plot.x.label="Time", plot.y.label="Abundance", plot.legend.title="Sample", plot.theme="normal", plot.layout = "dygraph"){
   
   # Extract data from phyloseq object ------------------------------------------------
   
@@ -69,48 +73,6 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
     setkey(Display, Sample) %>%
     unique() %>% 
     as.data.frame()
-
-  
-#############################################
-##            ggplot layout                ##
-#############################################  
-    
-    # Add time variables to abundance reads --------------------------------------------
-    
-    time1 <- sample[, time] %>% as.Date()
-    abund6 <- cbind(Time=time1, abund3) 
-    
-    # Base plot, user may choose labels ------------------------------------------------
-    
-    p <- ggplot(abund6, aes_string(x="Time", y="sum", col = "Display"))+
-      geom_line()+
-      geom_point()+
-      labs(x=plot.x.label, y=plot.y.label)+
-      scale_colour_discrete(name=plot.legend.label)+
-      theme(axis.text.x = element_text(size = 10, hjust = 1)) + 
-      theme(axis.text.y = element_text(size = 12))
-    
-    # Setting layout if plot.theme = clean----------------------------------------------
-    
-    if(plot.theme == "clean"){
-      
-      p <- p + theme(legend.position = "none",
-                     axis.text.y = element_text(size = 8, color = "black"),
-                     axis.text.x = element_text(size = 8, color = "black", vjust = 0.5),
-                     axis.title = element_blank(),
-                     text = element_text(size = 8, color = "black"),
-                     axis.ticks.length = unit(1, "mm"),
-                     plot.margin = unit(c(0,0,0,0), "mm"),
-                     title = element_text(size = 8))
-    }
-    # Output----------------------------------------------------------------------------
-    if(show.ggplot == TRUE){
-     p
-  } else {
-  
-  #############################################
-  ##            dygraph layout              ##
-  ############################################# 
   
   # Reshaping data for xts ---------------------------------------------------------
   
@@ -130,10 +92,48 @@ timeseries <- function(data, time, tax.aggregate="Phylum", tax.add=NULL, tax.cla
   
   xts2 <- apply.daily(xts1, FUN=mean)
   
-  dygraph(xts2) %>%
-    dyOptions(drawPoint = T, pointSize=2) %>%
-    dyAxis("y", label = "Abundance Reads") %>%
-    dyLegend(labelsSeparateLines = TRUE)    
-
+  
+  if(plot.layout == "dygraph"){
+    dygraph(xts2) %>%
+      dyOptions(drawPoint = T, pointSize=2) %>%
+      dyAxis("y", label = plot.y.label) %>%
+      dyAxis("x", label = plot.x.label) %>%
+      dyLegend(labelsSeparateLines = TRUE)
   }
+  
+  if(plot.layout == "ggplot"){
+    
+  # Reshaping for ggplot  -----------------------------------------------------------
+    
+    ggxts <- tidy(xts2)  
+    
+  # Base plot, user may choose labels ------------------------------------------------
+    
+    p <- ggplot(ggxts, aes_string(x="index", y="value", col = "series"))+
+      geom_line()+
+      geom_point()+
+      labs(x=plot.x.label, y=plot.y.label)+
+      scale_colour_discrete(name=plot.legend.title)+
+      theme(axis.text.x = element_text(size = 10, hjust = 1)) + 
+      theme(axis.text.y = element_text(size = 12))
+    
+    # Setting layout if plot.theme = clean----------------------------------------------
+    
+    if(plot.theme == "clean"){
+      
+      p <- p + theme(legend.position = "none",
+                     axis.text.y = element_text(size = 8, color = "black"),
+                     axis.text.x = element_text(size = 8, color = "black", vjust = 0.5),
+                     axis.title = element_blank(),
+                     text = element_text(size = 8, color = "black"),
+                     axis.ticks.length = unit(1, "mm"),
+                     plot.margin = unit(c(0,0,0,0), "mm"),
+                     title = element_text(size = 8))
+    }
+    # Output----------------------------------------------------------------------------
+    p
+    
+  }
+  
+
 }
