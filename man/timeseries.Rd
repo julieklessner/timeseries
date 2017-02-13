@@ -6,8 +6,8 @@
 \usage{
 timeseries(data, time, tax.aggregate = "Phylum", tax.add = NULL,
   tax.class = NULL, tax.empty = "best", plot.x.label = "Time",
-  plot.y.label = "Abundance", plot.legend.label = "Sample",
-  plot.theme = "normal", show.ggplot = FALSE)
+  plot.y.label = "Abundance", plot.legend.title = "Sample",
+  plot.theme = "normal", plot.layout = "dygraph")
 }
 \arguments{
 \item{data}{(required) A phyloseq object.}
@@ -26,16 +26,19 @@ timeseries(data, time, tax.aggregate = "Phylum", tax.add = NULL,
 
 \item{plot.y.label}{Label on y-axis (default: "Abundance").}
 
-\item{plot.legend.label}{Label on legend (default: "Sample").}
+\item{plot.legend.title}{Label on ggplot legend. (default: "Sample").}
 
-\item{plot.theme}{Label on legend (default: "Sample").
-@keywords timeseries}
+\item{plot.theme}{Chose different standard layouts choose from "normal" or "clean" (default: "normal").}
 
-\item{show.ggplot}{Show non-interactive ggplot instead of interactive dygraph (default = FALSE)}
+\item{plot.layout}{Either "ggplot" or "dygraph" (default: "dygraph").}
 
 \item{group}{A variable from the associated sample data to group samples by (default: "Samples").}
 }
 \description{
 This function allows you plot relative abundance reads over time in a timeseries plot.
 }
+\author{
+Julie Klessner Thun Pedersen \email{julieklessnerthun@gmail.com}
+}
+\keyword{timeseries}
 
